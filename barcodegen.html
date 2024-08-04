@@ -50,6 +50,26 @@
         #toggle-button.start {
             background-color: #2ecc71;
         }
+        .timer-control {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .timer-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 25px;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        .timer-display {
+            font-size: 18px;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -58,11 +78,18 @@
         <div id="count-label"></div>
     </div>
     <button id="toggle-button">STOP</button>
+    <div class="timer-control">
+        <button id="decrease-timer" class="timer-button">-</button>
+        <span id="timer-display" class="timer-display">2.0</span>
+        <button id="increase-timer" class="timer-button">+</button>
+    </div>
 
     <script>
         let barcodeCount = 0;
         let countdownInterval;
         let isRunning = true;
+        let timerDuration = 2.0; // Default timer duration in seconds
+        let holdInterval;
 
         function generateEAN13() {
             let ean = '';
@@ -95,7 +122,7 @@
                 marginBottom: 10
             });
             barcodeCount++;
-            updateCountLabel(2);
+            updateCountLabel(timerDuration);
         }
 
         function updateCountLabel(countdown) {
@@ -106,7 +133,7 @@
         }
 
         function startCountdown() {
-            let countdown = 2;
+            let countdown = timerDuration;
             updateCountLabel(countdown);
             countdownInterval = setInterval(() => {
                 if (!isRunning) {
@@ -140,7 +167,30 @@
             }
         }
 
+        function updateTimerDisplay() {
+            document.getElementById('timer-display').textContent = timerDuration.toFixed(1);
+        }
+
+        function changeTimerDuration(amount) {
+            timerDuration = Math.max(0.1, timerDuration + amount);
+            updateTimerDisplay();
+        }
+
         document.getElementById('toggle-button').addEventListener('click', toggleBarcode);
+
+        const decreaseTimerButton = document.getElementById('decrease-timer');
+        const increaseTimerButton = document.getElementById('increase-timer');
+
+        decreaseTimerButton.addEventListener('mousedown', () => {
+            holdInterval = setInterval(() => changeTimerDuration(-0.1), 100);
+        });
+        increaseTimerButton.addEventListener('mousedown', () => {
+            holdInterval = setInterval(() => changeTimerDuration(0.1), 100);
+        });
+
+        document.addEventListener('mouseup', () => clearInterval(holdInterval));
+        document.addEventListener('mouseleave', () => clearInterval(holdInterval));
+
         document.querySelector('.barcode-container').addEventListener('click', () => {
             if (isRunning) {
                 clearInterval(countdownInterval);
